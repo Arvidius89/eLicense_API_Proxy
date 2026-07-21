@@ -2,8 +2,6 @@ import base64
 import tempfile
 from pathlib import Path
 
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.serialization import pkcs12
 from fastapi import status
 
 from .errors import ProxyError
@@ -43,6 +41,16 @@ def build_pem_tempfiles(
     pfx_password: str,
     pfx_base64: str | None = None,
 ) -> tuple[str, str, list[str]]:
+    try:
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.serialization import pkcs12
+    except ImportError as exc:
+        raise ProxyError(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="missing_dependency",
+            message="Dependency 'cryptography' is not available in the runtime environment",
+        ) from exc
+
     cert_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
     key_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
     cert_temp_file.close()

@@ -54,11 +54,22 @@ def configure_logging() -> logging.Logger:
     stream_handler.setFormatter(JsonFormatter())
     logger.addHandler(stream_handler)
 
-    logs_dir = Path("logs")
-    logs_dir.mkdir(parents=True, exist_ok=True)
-    file_handler = logging.FileHandler(logs_dir / "proxy.log")
-    file_handler.setFormatter(JsonFormatter())
-    logger.addHandler(file_handler)
+    try:
+        logs_dir = Path("logs")
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.FileHandler(logs_dir / "proxy.log")
+        file_handler.setFormatter(JsonFormatter())
+        logger.addHandler(file_handler)
+    except OSError:
+        # File logging is a local development convenience only. Some hosting
+        # environments (e.g. Azure Functions Flex Consumption during worker
+        # indexing) may have a read-only or unexpected working directory, so
+        # failing to create the log file must never prevent the app/module
+        # from importing successfully. Stdout logging above still works.
+        logger.warning(
+            "File logging unavailable; continuing with stdout logging only",
+            extra={"event": "file_logging_unavailable"},
+        )
 
     logger.propagate = False
     return logger
