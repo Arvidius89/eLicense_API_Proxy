@@ -4,6 +4,7 @@
 .env.*
 local.settings.json
 .venv/
+.venv311/
 __pycache__/
 .azurite/
 logs/
