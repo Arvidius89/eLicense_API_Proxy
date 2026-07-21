@@ -15,7 +15,8 @@ load_dotenv()
 class AppSettings:
     base_url_ia: str
     subscription_key: str
-    pfx_certificate_path: str
+    pfx_certificate_path: str | None
+    pfx_certificate_base64: str | None
     pfx_certificate_password: str
     request_timeout: int
     inbound_api_key_name: str
@@ -23,10 +24,12 @@ class AppSettings:
 
 
 def load_settings() -> AppSettings:
+    pfx_certificate_path = os.getenv("PFX_CERTIFICATE_PATH")
+    pfx_certificate_base64 = os.getenv("PFX_CERTIFICATE_BASE64")
+
     required = {
         "BASE_URL_IA": os.getenv("BASE_URL_IA"),
         "SUBSCRIPTION_KEY": os.getenv("SUBSCRIPTION_KEY"),
-        "PFX_CERTIFICATE_PATH": os.getenv("PFX_CERTIFICATE_PATH"),
         "PFX_CERTIFICATE_PASSWORD": os.getenv("PFX_CERTIFICATE_PASSWORD"),
         "INBOUND_API_KEY": os.getenv("INBOUND_API_KEY"),
     }
@@ -49,30 +52,39 @@ def load_settings() -> AppSettings:
             message="REQUEST_TIMEOUT must be an integer",
         ) from exc
 
+    if not pfx_certificate_path and not pfx_certificate_base64:
+        raise ProxyError(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="missing_configuration",
+            message="Missing required configuration: PFX_CERTIFICATE_PATH or PFX_CERTIFICATE_BASE64",
+        )
+
     settings = AppSettings(
         base_url_ia=required["BASE_URL_IA"],
         subscription_key=required["SUBSCRIPTION_KEY"],
-        pfx_certificate_path=required["PFX_CERTIFICATE_PATH"],
+        pfx_certificate_path=pfx_certificate_path,
+        pfx_certificate_base64=pfx_certificate_base64,
         pfx_certificate_password=required["PFX_CERTIFICATE_PASSWORD"],
         request_timeout=request_timeout,
         inbound_api_key_name=os.getenv("INBOUND_API_KEY_NAME", "x-api-key"),
         inbound_api_key=required["INBOUND_API_KEY"],
     )
 
-    cert_path = Path(settings.pfx_certificate_path)
-    if not cert_path.exists():
-        raise ProxyError(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            code="certificate_not_found",
-            message="Configured PFX certificate file was not found",
-        )
+    if settings.pfx_certificate_path:
+        cert_path = Path(settings.pfx_certificate_path)
+        if not cert_path.exists():
+            raise ProxyError(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                code="certificate_not_found",
+                message="Configured PFX certificate file was not found",
+            )
 
-    if not cert_path.is_file():
-        raise ProxyError(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            code="invalid_certificate_path",
-            message="Configured PFX certificate path is not a file",
-        )
+        if not cert_path.is_file():
+            raise ProxyError(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                code="invalid_certificate_path",
+                message="Configured PFX certificate path is not a file",
+            )
 
     return settings
 

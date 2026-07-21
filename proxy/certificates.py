@@ -1,3 +1,4 @@
+import base64
 import tempfile
 from pathlib import Path
 
@@ -9,21 +10,46 @@ from .errors import ProxyError
 from .logging_config import logger
 
 
-def build_pem_tempfiles(pfx_path: str, pfx_password: str) -> tuple[str, str, list[str]]:
-    cert_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
-    key_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
-    cert_temp_file.close()
-    key_temp_file.close()
-    cleanup_paths = [cert_temp_file.name, key_temp_file.name]
+def _read_pfx_bytes(pfx_path: str | None, pfx_base64: str | None) -> bytes:
+    if pfx_base64:
+        try:
+            return base64.b64decode(pfx_base64, validate=True)
+        except ValueError as exc:
+            raise ProxyError(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                code="invalid_certificate_data",
+                message="PFX_CERTIFICATE_BASE64 is not valid base64 data",
+            ) from exc
+
+    if not pfx_path:
+        raise ProxyError(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="missing_configuration",
+            message="No PFX certificate source configured",
+        )
 
     try:
-        pfx_bytes = Path(pfx_path).read_bytes()
+        return Path(pfx_path).read_bytes()
     except FileNotFoundError as exc:
         raise ProxyError(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             code="certificate_not_found",
             message="PFX certificate file does not exist",
         ) from exc
+
+
+def build_pem_tempfiles(
+    pfx_path: str | None,
+    pfx_password: str,
+    pfx_base64: str | None = None,
+) -> tuple[str, str, list[str]]:
+    cert_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
+    key_temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
+    cert_temp_file.close()
+    key_temp_file.close()
+    cleanup_paths = [cert_temp_file.name, key_temp_file.name]
+
+    pfx_bytes = _read_pfx_bytes(pfx_path, pfx_base64)
 
     try:
         private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(

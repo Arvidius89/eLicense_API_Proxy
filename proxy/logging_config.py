@@ -36,6 +36,20 @@ def configure_logging() -> logging.Logger:
     logger.setLevel(logging.INFO)
     logger.handlers.clear()
 
+    # Prevent dependency loggers from emitting backend URLs to stdout/Application Insights.
+    for noisy_logger_name in (
+        "httpx",
+        "httpx._client",
+        "httpcore",
+        "httpcore.connection",
+        "httpcore.http11",
+        "httpcore.proxy",
+    ):
+        noisy_logger = logging.getLogger(noisy_logger_name)
+        noisy_logger.handlers.clear()
+        noisy_logger.setLevel(logging.WARNING)
+        noisy_logger.propagate = False
+
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(JsonFormatter())
     logger.addHandler(stream_handler)

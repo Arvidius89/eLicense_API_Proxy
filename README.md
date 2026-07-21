@@ -68,11 +68,16 @@ Maak een `.env` bestand op basis van `.env.example`:
 BASE_URL_IA=https://test.partner.example
 SUBSCRIPTION_KEY=xxxxxxxxxxxxxxxxxxxx
 PFX_CERTIFICATE_PATH=certs/client.pfx
+PFX_CERTIFICATE_BASE64=
 PFX_CERTIFICATE_PASSWORD=secret
 REQUEST_TIMEOUT=30
 INBOUND_API_KEY_NAME=x-api-key
 INBOUND_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
+Gebruik lokaal normaal `PFX_CERTIFICATE_PATH`.
+
+Voor Azure deployment kun je `PFX_CERTIFICATE_BASE64` gebruiken in plaats van een certificaatbestand op disk. Laat in dat geval `PFX_CERTIFICATE_PATH` leeg of ongebruikt.
 
 ## 8. Certificaat plaatsen
 
@@ -216,10 +221,23 @@ Toegevoegde Azure Functions bestanden:
 Lokale Azure Functions setup:
 
 1. Installeer Azure Functions Core Tools v4.
-2. Maak `local.settings.json` op basis van `local.settings.json.example`.
-3. Zorg dat je certificaatpad in `PFX_CERTIFICATE_PATH` lokaal bestaat.
-4. Start met `func start`.
-5. Test vervolgens dezelfde routes als bij FastAPI, maar via poort `7071`.
+2. Start lokaal Azurite als je `AzureWebJobsStorage=UseDevelopmentStorage=true` gebruikt:
+
+```bash
+npx --yes azurite --location .azurite --silent
+```
+
+3. Maak `local.settings.json` op basis van `local.settings.json.example`.
+4. Zorg dat je certificaatpad in `PFX_CERTIFICATE_PATH` lokaal bestaat.
+5. Start met `func start`.
+6. Test vervolgens dezelfde routes als bij FastAPI, maar via poort `7071`.
+
+Aanbevolen productieconfiguratie voor Azure:
+
+1. Sla secrets op als App Settings of Key Vault references.
+2. Gebruik bij voorkeur `PFX_CERTIFICATE_BASE64` voor het clientcertificaat, zodat je geen `.pfx` bestand hoeft mee te deployen.
+3. Gebruik `INBOUND_API_KEY`, `SUBSCRIPTION_KEY` en `PFX_CERTIFICATE_PASSWORD` als secret App Settings.
+4. Laat certificaatbestanden uit de deployment artefacts.
 
 Voorbeeld URLs onder Azure Functions lokaal:
 
@@ -233,7 +251,8 @@ Belangrijke nuance:
 - De routes blijven gelijk omdat `host.json` de standaard `/api` prefix uitschakelt.
 - De proxy blijft zelf de inbound `x-api-key` afdwingen.
 - Azure Functions runtime-auth staat lokaal op anonymous; je eigen proxy-auth blijft dus de relevante beveiligingslaag.
-- Zonder Azurite of een echte storage connection kan `func start` een storage-waarschuwing tonen. Voor deze HTTP-only proxy bleken de endpoints lokaal alsnog bruikbaar.
+- Zonder Azurite of een echte storage connection kan `func start` een storage-waarschuwing tonen.
+- Met Azurite actief verdwijnt die waarschuwing en krijgt de host netjes een lease op de lokale storage emulator.
 
 Structuurkeuze:
 

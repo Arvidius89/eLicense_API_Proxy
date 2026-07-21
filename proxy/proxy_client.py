@@ -52,6 +52,7 @@ async def forward_request(
     cert_path, key_path, cleanup_paths = build_pem_tempfiles(
         settings.pfx_certificate_path,
         settings.pfx_certificate_password,
+        settings.pfx_certificate_base64,
     )
 
     started_at = time.perf_counter()

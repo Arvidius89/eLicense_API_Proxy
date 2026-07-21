@@ -5,6 +5,7 @@
 local.settings.json
 .venv/
 __pycache__/
+.azurite/
 logs/
 certs/*
 !certs/.gitkeep
