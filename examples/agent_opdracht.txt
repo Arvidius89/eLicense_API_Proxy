@@ -1,0 +1,338 @@
+Maak een complete Python FastAPI applicatie voor lokale ontwikkeling.
+
+DOEL
+
+De applicatie fungeert als een beveiligde proxy tussen Power Platform (of Postman) en een externe IA API.
+
+De proxy moet:
+
+- POST requests ontvangen
+- DELETE requests ontvangen
+- inkomende requests beveiligen met een API Key
+- mTLS gebruiken richting de externe IA API
+- een PFX certificaat met wachtwoord ondersteunen
+- een subscription key meesturen naar de IA API
+- payloads volledig transparant doorzetten
+- response bodies volledig transparant teruggeven
+- later eenvoudig migreerbaar zijn naar Azure Functions
+
+Gebruik:
+
+- Python 3.12
+- FastAPI
+- uvicorn
+- httpx
+- python-dotenv
+- pydantic
+- logging
+- cryptography
+
+PROJECTSTRUCTUUR
+
+.
+├── app.py
+├── requirements.txt
+├── .env.example
+├── README.md
+├── certs/
+├── examples/
+│   ├── create_document.json
+│   ├── activation_status.json
+│   └── delete_document.json
+└── logs/
+
+CONFIGURATIE
+
+Gebruik een .env bestand.
+
+Ondersteun de volgende configuratie:
+
+BASE_URL_IA=https://test.partner.example
+
+SUBSCRIPTION_KEY=xxxxxxxxxxxxxxxxxxxx
+
+PFX_CERTIFICATE_PATH=certs/client.pfx
+
+PFX_CERTIFICATE_PASSWORD=secret
+
+REQUEST_TIMEOUT=30
+
+INBOUND_API_KEY_NAME=x-api-key
+
+INBOUND_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+Maak ook een volledig .env.example bestand.
+
+INGAANDE AUTHENTICATIE
+
+Alle endpoints behalve /health moeten beveiligd zijn met een API Key.
+
+Verwachte header:
+
+x-api-key: <waarde uit INBOUND_API_KEY>
+
+Gedrag:
+
+- Header ontbreekt:
+  HTTP 401 Unauthorized
+
+- Header aanwezig maar ongeldig:
+  HTTP 403 Forbidden
+
+- Header geldig:
+  verzoek mag verder verwerkt worden
+
+Implementeer dit als herbruikbare FastAPI dependency of middleware.
+
+Belangrijk:
+
+- Log nooit de API Key.
+- Toon de API Key nooit in responses.
+- Neem authenticatie op in Swagger.
+
+ENDPOINTS
+
+GET /health
+
+POST /documents
+
+POST /documents/activation-status
+
+DELETE /documents
+
+ROUTING NAAR IA API
+
+POST /documents
+
+stuurt door naar:
+
+{BASE_URL_IA}/ia/v2/documents?subscription-key={SUBSCRIPTION_KEY}
+
+POST /documents/activation-status
+
+stuurt door naar:
+
+{BASE_URL_IA}/ia/documents/activation-status?subscription-key={SUBSCRIPTION_KEY}
+
+DELETE /documents
+
+stuurt door naar:
+
+{BASE_URL_IA}/ia/documents?subscription-key={SUBSCRIPTION_KEY}
+
+PAYLOADGEDRAG
+
+De proxy moet volledig payload-agnostisch zijn.
+
+Belangrijk:
+
+- Geen kennis van de business payload.
+- Geen schema-validatie.
+- Geen transformaties.
+- Geen verrijking.
+
+Voor POST requests:
+
+- Ontvang JSON.
+- Stuur de volledige body ongewijzigd door.
+- Geef de response ongewijzigd terug.
+
+Voor DELETE requests:
+
+- Alle queryparameters doorzetten.
+- Response ongewijzigd teruggeven.
+
+HTTP statuscodes van de backend moeten behouden blijven.
+
+MTLS
+
+De backend vereist mTLS.
+
+Gebruik:
+
+- PFX bestand
+- PFX wachtwoord
+
+Vereisten:
+
+- Converteer indien nodig automatisch naar tijdelijke PEM bestanden.
+- Werkt op Linux.
+- Werkt in GitHub Codespaces.
+- Eenvoudig te migreren naar Azure Functions.
+- Tijdelijke certificaatbestanden moeten worden opgeruimd.
+
+SUBSCRIPTION KEY
+
+De backend verwacht:
+
+subscription-key=<waarde>
+
+als queryparameter.
+
+De subscription key moet automatisch worden toegevoegd aan iedere backend request.
+
+Belangrijk:
+
+- Nooit in logs tonen.
+- Nooit in responses tonen.
+
+LOGGING
+
+Gebruik structured logging.
+
+Voor iedere request:
+
+- request-id genereren
+- timestamp loggen
+- HTTP methode loggen
+- endpoint loggen
+- backend endpoint loggen
+- response status loggen
+- duur van backend call loggen
+
+Log nooit:
+
+- API keys
+- subscription keys
+- certificaatwachtwoorden
+- certificaatinhoud
+
+ERROR HANDLING
+
+Implementeer duidelijke foutafhandeling voor:
+
+- ontbrekende configuratie
+- ontbrekend certificaat
+- certificaatbestand niet gevonden
+- fout certificaatwachtwoord
+- timeout naar backend
+- DNS fouten
+- netwerkfouten
+- backend 4xx
+- backend 5xx
+- onverwachte exceptions
+
+Maak nette JSON foutresponses.
+
+HEALTH ENDPOINT
+
+GET /health
+
+Publiek toegankelijk.
+
+Response:
+
+{
+  "status": "healthy"
+}
+
+Voeg optioneel controles toe op:
+
+- configuratie geladen
+- certificaat aanwezig
+- applicatie gestart
+
+SWAGGER
+
+Activeer standaard FastAPI Swagger.
+
+Voeg voorbeeldrequests toe voor:
+
+POST /documents
+
+POST /documents/activation-status
+
+DELETE /documents
+
+Toon API-key authenticatie in Swagger.
+
+Maak het mogelijk om de API-key in Swagger in te voeren.
+
+EXAMPLES MAP
+
+Maak aan:
+
+examples/create_document.json
+
+examples/activation_status.json
+
+examples/delete_document.json
+
+Gebruik realistische placeholder JSON.
+
+Deze bestanden dienen uitsluitend voor:
+
+- testen
+- documentatie
+- Postman voorbeelden
+
+De applicatie mag niet afhankelijk zijn van deze bestanden.
+
+README
+
+Maak een volledige README.md met:
+
+1. Introductie
+
+2. Architectuurdiagram
+
+Power Platform / Postman
+        |
+        | x-api-key
+        v
+FastAPI Proxy
+        |
+        | mTLS
+        | subscription-key
+        v
+IA API
+
+3. Installatie
+
+4. Virtual environment aanmaken
+
+5. Dependencies installeren
+
+6. Applicatie starten
+
+Voorbeeld:
+
+uvicorn app:app --reload
+
+7. Voorbeeld .env
+
+8. Certificaat plaatsen
+
+9. Testen met Postman
+
+Voorbeeld:
+
+GET /health
+
+POST /documents
+
+POST /documents/activation-status
+
+DELETE /documents
+
+10. Swagger gebruiken
+
+11. Logging
+
+12. Troubleshooting
+
+13. Migratiepad naar Azure Functions
+
+REQUIREMENTS
+
+Genereer alle bestanden volledig.
+
+Gebruik geen pseudocode.
+
+Gebruik geen TODO's.
+
+Gebruik geen placeholders zoals:
+- implementation omitted
+- not implemented
+
+De applicatie moet direct uitvoerbaar zijn in GitHub Codespaces.

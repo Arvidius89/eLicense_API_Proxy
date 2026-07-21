@@ -1,0 +1,14 @@
+[
+    {
+        "docType": "taxivergunning.1",
+        "document_number": "P123456/T/TT/1234567"
+    },
+    {
+        "docType": "hefcert.leus.1",
+        "document_number": "20000"
+    },
+    {
+        "docType": "org.iso.23220.1.nl.minienw.bctv2",
+        "document_number": "DEMO-BCTV2-2026-11"
+    }
+]

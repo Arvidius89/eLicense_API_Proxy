@@ -1,0 +1,112 @@
+{
+  "info": {
+    "name": "eLicense API Proxy Local",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Local test collection for FastAPI proxy endpoints"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "apiKeyHeader",
+      "value": "x-api-key"
+    },
+    {
+      "key": "apiKey",
+      "value": "replace-with-strong-local-api-key"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Create Documents",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{apiKeyHeader}}",
+            "value": "{{apiKey}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"documents\": [\n    {\n      \"docType\": \"org.iso.23220.1.nl.kiwa.sampcert\",\n      \"namespaces\": {\n        \"org.iso.23220.1.nl.kiwa.sampcert\": {\n          \"family_name\": \"Jansen\",\n          \"given_name\": \"Piet\",\n          \"document_number\": \"Kiwa_20260721_001\"\n        }\n      }\n    }\n  ],\n  \"license_holder\": {\n    \"last_name\": \"Jansen\",\n    \"first_name\": \"Piet\",\n    \"email\": \"piet.jansen@example.com\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/documents",
+          "host": ["{{baseUrl}}"],
+          "path": ["documents"]
+        }
+      }
+    },
+    {
+      "name": "Activation Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{apiKeyHeader}}",
+            "value": "{{apiKey}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"docType\": \"taxivergunning.1\",\n    \"document_number\": \"P123456/T/TT/1234567\"\n  },\n  {\n    \"docType\": \"hefcert.leus.1\",\n    \"document_number\": \"20000\"\n  }\n]"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/documents/activation-status",
+          "host": ["{{baseUrl}}"],
+          "path": ["documents", "activation-status"]
+        }
+      }
+    },
+    {
+      "name": "Delete Document",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "{{apiKeyHeader}}",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/documents?docType=org.iso.23220.1.nl.kiwa.sampcert&document_number=Kiwa_260303_1",
+          "host": ["{{baseUrl}}"],
+          "path": ["documents"],
+          "query": [
+            {
+              "key": "docType",
+              "value": "org.iso.23220.1.nl.kiwa.sampcert"
+            },
+            {
+              "key": "document_number",
+              "value": "Kiwa_260303_1"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
