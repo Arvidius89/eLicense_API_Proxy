@@ -38,7 +38,7 @@ def _read_pfx_bytes(pfx_path: str | None, pfx_base64: str | None) -> bytes:
 
 def build_pem_tempfiles(
     pfx_path: str | None,
-    pfx_password: str,
+    pfx_password: str | None,
     pfx_base64: str | None = None,
 ) -> tuple[str, str, list[str]]:
     try:
@@ -57,19 +57,75 @@ def build_pem_tempfiles(
     key_temp_file.close()
     cleanup_paths = [cert_temp_file.name, key_temp_file.name]
 
+    if pfx_base64:
+        logger.info(
+            "Certificate source selected",
+            extra={"event": "certificate_source_base64"},
+        )
+    else:
+        logger.info(
+            "Certificate source selected",
+            extra={"event": "certificate_source_file"},
+        )
+
     pfx_bytes = _read_pfx_bytes(pfx_path, pfx_base64)
 
-    try:
-        private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
-            pfx_bytes,
-            pfx_password.encode("utf-8"),
+    def _is_pkcs12_password_error(exc: ValueError) -> bool:
+        message = str(exc).lower()
+        return (
+            "password" in message
+            or "pkcs12" in message
+            or "mac verify failure" in message
+            or "invalid password or pkcs12 data" in message
         )
-    except ValueError as exc:
-        raise ProxyError(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            code="invalid_certificate_password",
-            message="Unable to decrypt PFX certificate with provided password",
-        ) from exc
+
+    private_key = None
+    certificate = None
+    additional_certificates = None
+    password_attempt_error: ValueError | None = None
+
+    if pfx_password is not None:
+        try:
+            private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
+                pfx_bytes,
+                pfx_password.encode("utf-8"),
+            )
+            logger.info(
+                "PFX certificate loaded using password",
+                extra={"event": "certificate_loaded_with_password"},
+            )
+        except ValueError as exc:
+            if not _is_pkcs12_password_error(exc):
+                raise ProxyError(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    code="invalid_certificate",
+                    message="Unable to parse PFX certificate data",
+                ) from exc
+            password_attempt_error = exc
+
+    if private_key is None or certificate is None:
+        if pfx_password is None or password_attempt_error is not None:
+            try:
+                private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
+                    pfx_bytes,
+                    None,
+                )
+                logger.info(
+                    "PFX certificate loaded without password",
+                    extra={"event": "certificate_loaded_without_password"},
+                )
+            except ValueError as exc:
+                if password_attempt_error is not None:
+                    raise ProxyError(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        code="invalid_certificate_password",
+                        message="Unable to decrypt PFX certificate with provided password and without password",
+                    ) from exc
+                raise ProxyError(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    code="invalid_certificate",
+                    message="Unable to parse PFX certificate data",
+                ) from exc
 
     if private_key is None or certificate is None:
         raise ProxyError(

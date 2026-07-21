@@ -17,7 +17,7 @@ class AppSettings:
     subscription_key: str
     pfx_certificate_path: str | None
     pfx_certificate_base64: str | None
-    pfx_certificate_password: str
+    pfx_certificate_password: str | None
     request_timeout: int
     inbound_api_key_name: str
     inbound_api_key: str
@@ -30,7 +30,6 @@ def load_settings() -> AppSettings:
     required = {
         "BASE_URL_IA": os.getenv("BASE_URL_IA"),
         "SUBSCRIPTION_KEY": os.getenv("SUBSCRIPTION_KEY"),
-        "PFX_CERTIFICATE_PASSWORD": os.getenv("PFX_CERTIFICATE_PASSWORD"),
         "INBOUND_API_KEY": os.getenv("INBOUND_API_KEY"),
     }
 
@@ -64,7 +63,7 @@ def load_settings() -> AppSettings:
         subscription_key=required["SUBSCRIPTION_KEY"],
         pfx_certificate_path=pfx_certificate_path,
         pfx_certificate_base64=pfx_certificate_base64,
-        pfx_certificate_password=required["PFX_CERTIFICATE_PASSWORD"],
+        pfx_certificate_password=os.getenv("PFX_CERTIFICATE_PASSWORD"),
         request_timeout=request_timeout,
         inbound_api_key_name=os.getenv("INBOUND_API_KEY_NAME", "x-api-key"),
         inbound_api_key=required["INBOUND_API_KEY"],
