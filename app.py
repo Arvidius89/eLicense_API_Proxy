@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode, urljoin
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 import httpx
 from cryptography.hazmat.primitives import serialization
@@ -289,13 +289,12 @@ def _append_subscription_key(
 
 
 def _sanitize_backend_url(url: str) -> str:
-    if "subscription-key=" not in url:
+    parsed = urlsplit(url)
+    if not parsed.query:
         return url
-    before, after = url.split("subscription-key=", maxsplit=1)
-    if "&" in after:
-        _, rest = after.split("&", maxsplit=1)
-        return f"{before}subscription-key=***&{rest}"
-    return f"{before}subscription-key=***"
+
+    masked_query = urlencode([(key, "***") for key, _ in parse_qsl(parsed.query, keep_blank_values=True)])
+    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, masked_query, parsed.fragment))
 
 
 def _build_pem_tempfiles(pfx_path: str, pfx_password: str) -> tuple[str, str, list[str]]:
