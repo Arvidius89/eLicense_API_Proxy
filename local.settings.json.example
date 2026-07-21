@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureWebJobsSecretStorageType": "files",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "BASE_URL_IA": "https://test.partner.example",
+    "SUBSCRIPTION_KEY": "xxxxxxxxxxxxxxxxxxxx",
+    "PFX_CERTIFICATE_PATH": "certs/client.pfx",
+    "PFX_CERTIFICATE_PASSWORD": "secret",
+    "REQUEST_TIMEOUT": "30",
+    "INBOUND_API_KEY_NAME": "x-api-key",
+    "INBOUND_API_KEY": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
+}

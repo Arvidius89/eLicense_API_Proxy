@@ -1,0 +1,11 @@
+.git/
+.gitignore
+.env
+.env.*
+local.settings.json
+.venv/
+__pycache__/
+logs/
+certs/*
+!certs/.gitkeep
+*.pyc

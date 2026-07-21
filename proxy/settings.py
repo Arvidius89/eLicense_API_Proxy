@@ -84,9 +84,7 @@ async def get_settings_or_raise(request: Request) -> AppSettings:
 
     settings = getattr(request.app.state, "settings", None)
     if not settings:
-        raise ProxyError(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            code="missing_configuration",
-            message="Application settings are not loaded",
-        )
+        settings = load_settings()
+        request.app.state.settings = settings
+        request.app.state.startup_error = None
     return settings

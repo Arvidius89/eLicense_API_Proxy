@@ -52,6 +52,14 @@ uvicorn app:app --reload
 
 De app start standaard op `http://127.0.0.1:8000`.
 
+Azure Functions lokaal starten:
+
+```bash
+func start
+```
+
+De Azure Functions host start standaard op `http://127.0.0.1:7071`.
+
 ## 7. Voorbeeld `.env`
 
 Maak een `.env` bestand op basis van `.env.example`:
@@ -196,7 +204,43 @@ Auth gedrag:
 
 ## 13. Migratiepad naar Azure Functions
 
-Deze implementatie is voorbereid op migratie naar Azure Functions:
+Deze implementatie kan nu zowel als FastAPI-app als Azure Function App lokaal draaien.
+
+Toegevoegde Azure Functions bestanden:
+
+- `function_app.py`
+- `host.json`
+- `local.settings.json.example`
+- `.funcignore`
+
+Lokale Azure Functions setup:
+
+1. Installeer Azure Functions Core Tools v4.
+2. Maak `local.settings.json` op basis van `local.settings.json.example`.
+3. Zorg dat je certificaatpad in `PFX_CERTIFICATE_PATH` lokaal bestaat.
+4. Start met `func start`.
+5. Test vervolgens dezelfde routes als bij FastAPI, maar via poort `7071`.
+
+Voorbeeld URLs onder Azure Functions lokaal:
+
+- `GET http://127.0.0.1:7071/health`
+- `POST http://127.0.0.1:7071/documents`
+- `POST http://127.0.0.1:7071/documents/activation-status`
+- `DELETE http://127.0.0.1:7071/documents`
+
+Belangrijke nuance:
+
+- De routes blijven gelijk omdat `host.json` de standaard `/api` prefix uitschakelt.
+- De proxy blijft zelf de inbound `x-api-key` afdwingen.
+- Azure Functions runtime-auth staat lokaal op anonymous; je eigen proxy-auth blijft dus de relevante beveiligingslaag.
+- Zonder Azurite of een echte storage connection kan `func start` een storage-waarschuwing tonen. Voor deze HTTP-only proxy bleken de endpoints lokaal alsnog bruikbaar.
+
+Structuurkeuze:
+
+- De bestaande FastAPI-app blijft het ASGI-hart van de applicatie.
+- `function_app.py` host diezelfde app via Azure Functions, zodat routes, middleware en proxylogica niet dubbel hoeven te worden onderhouden.
+
+Deze implementatie is daardoor ook voorbereid op verdere migratie naar volledig Azure-native hosting:
 
 - Routehandlers zijn dun en bevatten alleen proxylogica.
 - Configuratie is centraal en omgeving-gedreven.
