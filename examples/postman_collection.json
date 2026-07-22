@@ -84,27 +84,25 @@
     {
       "name": "Delete Document",
       "request": {
-        "method": "DELETE",
+        "method": "POST",
         "header": [
           {
             "key": "{{apiKeyHeader}}",
             "value": "{{apiKey}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"docType\": \"org.iso.23220.1.nl.kiwa.sampcert\",\n    \"document_number\": \"Kiwa_260303_1\"\n  }\n]"
+        },
         "url": {
-          "raw": "{{baseUrl}}/documents?docType=org.iso.23220.1.nl.kiwa.sampcert&document_number=Kiwa_260303_1",
+          "raw": "{{baseUrl}}/documents/delete",
           "host": ["{{baseUrl}}"],
-          "path": ["documents"],
-          "query": [
-            {
-              "key": "docType",
-              "value": "org.iso.23220.1.nl.kiwa.sampcert"
-            },
-            {
-              "key": "document_number",
-              "value": "Kiwa_260303_1"
-            }
-          ]
+          "path": ["documents", "delete"]
         }
       }
     }

@@ -120,14 +120,15 @@ Content-Type: application/json
 
 Bodyvoorbeeld: zie [examples/activation_status.json](examples/activation_status.json).
 
-### DELETE `/documents`
+### POST `/documents/delete`
 
 ```http
-DELETE "http://127.0.0.1:8000/documents?docType=org.iso.23220.1.nl.kiwa.sampcert&document_number=Kiwa_260303_1"
+POST http://127.0.0.1:8000/documents/delete
 x-api-key: <jouw key>
+Content-Type: application/json
 ```
 
-Queryvoorbeeld: zie [examples/delete_document.json](examples/delete_document.json).
+Bodyvoorbeeld: zie [examples/delete_document.json](examples/delete_document.json).
 
 Sneller testen met meegeleverde collectie:
 
@@ -244,7 +245,7 @@ Voorbeeld URLs onder Azure Functions lokaal:
 - `GET http://127.0.0.1:7071/health`
 - `POST http://127.0.0.1:7071/documents`
 - `POST http://127.0.0.1:7071/documents/activation-status`
-- `DELETE http://127.0.0.1:7071/documents`
+- `POST http://127.0.0.1:7071/documents/delete`
 
 Belangrijke nuance:
 

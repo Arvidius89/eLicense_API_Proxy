@@ -1,0 +1,377 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "eLicense IA Proxy",
+    "description": "Secure FastAPI proxy for IA API with inbound API key auth and outbound mTLS.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Create Documents",
+        "operationId": "create_documents_documents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "example": {
+                "documents": [
+                  {
+                    "docType": "org.iso.23220.1.eu.europe.emsa.coc",
+                    "namespaces": {
+                      "org.iso.23220.1.eu.europe.emsa.coc": {
+                        "document_number": "Koopvaardij_38"
+                      }
+                    }
+                  }
+                ],
+                "license_holder": {
+                  "last_name": "test",
+                  "first_name": "tester",
+                  "email": "test@tester.nl"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDocumentsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/documents/activation-status": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Activation Status",
+        "operationId": "activation_status_documents_activation_status_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/documents/delete": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Delete Documents",
+        "operationId": "delete_documents_documents_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteDocumentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteDocumentsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivationStatusDocumentStatus": {
+        "properties": {
+          "docType": {
+            "type": "string",
+            "title": "Doctype"
+          },
+          "document_number": {
+            "type": "string",
+            "title": "Document Number"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "docType",
+          "document_number",
+          "status"
+        ],
+        "title": "ActivationStatusDocumentStatus"
+      },
+      "ActivationStatusRequest": {
+        "items": {
+          "$ref": "#/components/schemas/DocumentRef"
+        },
+        "type": "array",
+        "title": "ActivationStatusRequest"
+      },
+      "ActivationStatusResponse": {
+        "properties": {
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/ActivationStatusDocumentStatus"
+            },
+            "type": "array",
+            "title": "Documents"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "documents"
+        ],
+        "title": "ActivationStatusResponse"
+      },
+      "CreateDocumentsResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "documents_saved": {
+            "type": "integer",
+            "title": "Documents Saved"
+          },
+          "documents_failed": {
+            "type": "integer",
+            "title": "Documents Failed"
+          },
+          "saved_document_numbers": {
+            "items": {
+              "$ref": "#/components/schemas/CreateSavedDocument"
+            },
+            "type": "array",
+            "title": "Saved Document Numbers"
+          },
+          "failed_document_numbers": {
+            "items": {
+              "$ref": "#/components/schemas/FailedDocument"
+            },
+            "type": "array",
+            "title": "Failed Document Numbers"
+          },
+          "created": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "documents_saved",
+          "documents_failed",
+          "saved_document_numbers",
+          "failed_document_numbers"
+        ],
+        "title": "CreateDocumentsResponse"
+      },
+      "CreateSavedDocument": {
+        "properties": {
+          "document_number": {
+            "type": "string",
+            "title": "Document Number"
+          },
+          "activation_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "oid4vci_credential_offer": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "document_number"
+        ],
+        "title": "CreateSavedDocument"
+      },
+      "DeleteDocumentsRequest": {
+        "items": {
+          "$ref": "#/components/schemas/DocumentRef"
+        },
+        "type": "array",
+        "title": "DeleteDocumentsRequest"
+      },
+      "DeleteDocumentsResponse": {
+        "properties": {
+          "documents_deleted": {
+            "type": "integer",
+            "title": "Documents Deleted"
+          },
+          "documents_failed": {
+            "type": "integer",
+            "title": "Documents Failed"
+          },
+          "deleted_document_numbers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deleted Document Numbers"
+          },
+          "failed_document_numbers": {
+            "items": {
+              "$ref": "#/components/schemas/FailedDocument"
+            },
+            "type": "array",
+            "title": "Failed Document Numbers"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "documents_deleted",
+          "documents_failed",
+          "deleted_document_numbers",
+          "failed_document_numbers"
+        ],
+        "title": "DeleteDocumentsResponse"
+      },
+      "DocumentRef": {
+        "properties": {
+          "docType": {
+            "type": "string",
+            "title": "Doctype",
+            "example": "org.iso.23220.1.nl.kiwa.sampcert"
+          },
+          "document_number": {
+            "type": "string",
+            "title": "Document Number",
+            "example": "Kiwa_260303_1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "docType",
+          "document_number"
+        ],
+        "title": "DocumentRef"
+      },
+      "FailedDocument": {
+        "properties": {
+          "document_number": {
+            "type": "string",
+            "title": "Document Number"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "document_number"
+        ],
+        "title": "FailedDocument"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "healthy"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  }
+}

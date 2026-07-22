@@ -36,8 +36,8 @@ curl -sS -i -X POST "${BASE_URL}/documents/activation-status" \
   --data-binary "@${ACTIVATION_PAYLOAD}"
 echo
 
-echo "[5/5] DELETE /documents"
-curl -sS -i -X DELETE "${BASE_URL}/documents" \
+echo "[5/5] POST /documents/delete"
+curl -sS -i -X POST "${BASE_URL}/documents/delete" \
   -H "${API_KEY_HEADER_NAME}: ${API_KEY_VALUE}" \
   -H "Content-Type: application/json" \
   --data-binary "@${DELETE_PAYLOAD}"

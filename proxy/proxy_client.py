@@ -41,6 +41,7 @@ async def forward_request(
     settings: AppSettings,
     body: bytes | None = None,
     extra_query: list[tuple[str, Any]] | None = None,
+    log_request: bool = True,
 ) -> Response:
     backend_url = append_subscription_key(
         urljoin(settings.base_url_ia.rstrip("/") + "/", backend_path.lstrip("/")),
@@ -89,19 +90,20 @@ async def forward_request(
     backend_duration_ms = round((time.perf_counter() - started_at) * 1000, 2)
     total_duration_ms = round((time.perf_counter() - request.state.started_at) * 1000, 2)
 
-    logger.info(
-        "Proxy request completed",
-        extra={
-            "event": "proxy_request",
-            "request_id": request.state.request_id,
-            "http_method": request.method,
-            "endpoint": request.url.path,
-            "backend_endpoint": safe_backend_url,
-            "response_status": response.status_code,
-            "backend_duration_ms": backend_duration_ms,
-            "duration_ms": total_duration_ms,
-        },
-    )
+    if log_request:
+        logger.info(
+            "Proxy request completed",
+            extra={
+                "event": "proxy_request",
+                "request_id": request.state.request_id,
+                "http_method": request.method,
+                "endpoint": request.url.path,
+                "backend_endpoint": safe_backend_url,
+                "response_status": response.status_code,
+                "backend_duration_ms": backend_duration_ms,
+                "duration_ms": total_duration_ms,
+            },
+        )
 
     passthrough_headers: dict[str, str] = {}
     content_type = response.headers.get("content-type")

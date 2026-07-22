@@ -1,0 +1,14 @@
+{
+  "request_id": "5a137dc8-57f6-4b5b-afdd-00886bc87f0b",
+  "documents_saved": 1,
+  "documents_failed": 0,
+  "saved_document_numbers": [
+    {
+      "document_number": "Koopvaardij_38",
+      "activation_code": "77529397",
+      "oid4vci_credential_offer": "openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A%22https%3A%2F%2Fapi.digitalcertification-acc.kiwa.com%2F5ddad262-373f-4f40-941b-de6fd6c2b535%22%2C%22credential_configuration_ids%22%3A%5B%22org.iso.23220.1.eu.europe.emsa.coc%22%5D%2C%22grants%22%3A%7B%22urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code%22%3A%7B%22pre-authorized_code%22%3A%22cdc68f3a-d924-4022-8ec9-757cbb39fa43%22%2C%22tx_code%22%3A%7B%22input_mode%22%3A%22numeric%22%2C%22length%22%3A8%2C%22description%22%3A%22Activation%20code%22%7D%7D%7D%7D"
+    }
+  ],
+  "failed_document_numbers": [],
+  "created": "2026-07-21T10:23:03.5838735Z"
+}

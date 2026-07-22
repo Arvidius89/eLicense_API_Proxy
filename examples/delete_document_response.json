@@ -1,0 +1,11 @@
+{
+  "documents_deleted": 0,
+  "documents_failed": 1,
+  "deleted_document_numbers": [],
+  "failed_document_numbers": [
+    {
+      "document_number": "Kiwa_260303_1",
+      "error": "License org.iso.23220.1.nl.kiwa.sampcert with IA id 5ddad262-373f-4f40-941b-de6fd6c2b535 and document number Kiwa_260303_1 was not found"
+    }
+  ]
+}
