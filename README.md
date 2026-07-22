@@ -188,6 +188,27 @@ Nooit gelogd:
 - certificaatwachtwoord
 - certificaatinhoud
 
+## Security hardening check
+
+Gebruik de hardening check om te valideren dat gevoelige bestanden niet worden meegenomen in Git of deployment-artefacts.
+
+Lokaal uitvoeren:
+
+```bash
+bash scripts/hardening_check.sh
+```
+
+De check valideert:
+
+- `.env`, `local.settings.json` en certificaatbestanden worden niet door Git getrackt
+- vereiste ignore-regels in `.gitignore` en `.funcignore` zijn aanwezig
+- repository-artefacts (`.zip`, `.tar`, `.tgz`, `.tar.gz`) bevatten geen `.env`, `local.settings.json` of certificaatbestanden
+
+CI:
+
+- GitHub Actions workflow: `.github/workflows/hardening-check.yml`
+- Draait automatisch op pushes naar `main` en op pull requests
+
 ## 12. Troubleshooting
 
 Veelvoorkomende problemen:
